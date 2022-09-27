@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
 
 #define BUFFER_SIZE 128
 
@@ -59,8 +60,9 @@ int main() {
         else if (P2 != 0) {
             char* string = read_string(0);
             if (string == NULL) {
-                perror("No strings");
-                exit(5);
+                kill(P1, SIGKILL);
+                kill(P2, SIGKILL);
+                return 0;
             }
             while (string != NULL) {
                 int n = strlen(string);
@@ -101,5 +103,4 @@ int main() {
         perror("execve");
         exit(8);
     }
-    
 }
