@@ -14,16 +14,32 @@ char* child_env[] = { NULL };
 
 char* read_string(pid_t fd) {
     char* buffer = calloc(sizeof(char), BUFFER_SIZE);
-    if (read(fd, buffer, BUFFER_SIZE) <= 0) {
+    char c;
+    if (read(fd, &c, 1) <= 0) {
         return NULL;
     }
-    char *string = calloc(sizeof(char), strlen(buffer) - 1);
-    strncpy(string, buffer, strlen(buffer) - 1);
+    if (c == '\0') {
+        return NULL;
+    }
+    int i = 0;
+    buffer[i++] = c;
+    while (read(fd, &c, 1) > 0){
+        if (( c != '\0') && (c != '\n')) {
+            buffer[i++] = c;
+        }
+        else{
+            break;
+        }
+    }
+
+    char *string = calloc(sizeof(char), strlen(buffer));
+    strncpy(string, buffer, strlen(buffer));
     free(buffer);
     return string;
 }
 
 int main() {
+    
     char* filename1 = read_string(0);
     char* filename2 = read_string(0);
 
@@ -34,12 +50,11 @@ int main() {
 
     pid_t filedes1, filedes2;
 
-    if ((filedes1 = open(filename1, O_WRONLY)) < 0) {
+    if ((filedes1 = open(filename1, O_WRONLY | O_TRUNC)) < 0) {
         perror(filename1);
         exit(1);
     }
-
-    if ((filedes2 = open(filename2, O_WRONLY)) < 0) {
+    if ((filedes2 = open(filename2, O_WRONLY | O_TRUNC)) < 0) {
         perror(filename2);
         exit(2);
     }
@@ -59,20 +74,23 @@ int main() {
         }
         else if (P2 != 0) {
             char* string = read_string(0);
-            if (string == NULL) {
-                kill(P1, SIGKILL);
-                kill(P2, SIGKILL);
-                return 0;
-            }
             while (string != NULL) {
                 int n = strlen(string);
+                char newline = '\n';
                 if (n > 10) {
                     write(fd2[1], string, n);
+                    write(fd2[1], &newline, 1);
                 }
                 else {
                     write(fd1[1], string, n);
+                    write(fd1[1], &newline, 1);
                 }
                 string = read_string(0);
+            }
+            if (string == NULL) {
+                char end = '\0';
+                write(fd1[1], &end, 1);
+                write(fd2[1], &end, 1);
             }
         }
         else {
@@ -103,4 +121,5 @@ int main() {
         perror("execve");
         exit(8);
     }
+    return 0;
 }

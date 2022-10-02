@@ -8,9 +8,24 @@
 
 char* read_string(pid_t fd) {
     char* buffer = calloc(sizeof(char), BUFFER_SIZE);
-    if (read(fd, buffer, BUFFER_SIZE) <= 0) {
+    char c;
+    if (read(fd, &c, 1) <= 0) {
         return NULL;
     }
+    if (c == '\0') {
+        return NULL;
+    }
+    int i = 0;
+    buffer[i++] = c;
+    while (read(fd, &c, 1) > 0){
+        if (( c != '\0') && (c != '\n')) {
+            buffer[i++] = c;
+        }
+        else{
+            break;
+        }
+    }
+
     char *string = calloc(sizeof(char), strlen(buffer));
     strncpy(string, buffer, strlen(buffer));
     free(buffer);
@@ -28,6 +43,10 @@ char* reverse(char *string, int n) {
 int main() {
     while (1) {
         char* string = read_string(0);
+
+        if (string == NULL) {
+            break;
+        }
 
         int n = strlen(string);
         char* string_rev = reverse(string, n);
