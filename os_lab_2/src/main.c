@@ -44,17 +44,17 @@ int main() {
     char* filename2 = read_string(0);
 
 
-    pid_t fd1[2], fd2[2];
+    int fd1[2], fd2[2];
     pipe(fd1);
     pipe(fd2);
 
     pid_t filedes1, filedes2;
 
-    if ((filedes1 = open(filename1, O_WRONLY | O_TRUNC)) < 0) {
+    if ((filedes1 = open(filename1, O_WRONLY | O_TRUNC | O_CREAT, S_IRWXU)) < 0) {
         perror(filename1);
         exit(1);
     }
-    if ((filedes2 = open(filename2, O_WRONLY | O_TRUNC)) < 0) {
+    if ((filedes2 = open(filename2, O_WRONLY | O_TRUNC | O_CREAT, S_IRWXU)) < 0) {
         perror(filename2);
         exit(2);
     }
