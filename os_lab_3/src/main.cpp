@@ -76,11 +76,10 @@ void *thread_function(void *arguments) {
    }
 }
 
-int main() {
+int main(int argc, const char **argv) {
 int n, i, j;
-cout << "Введите количество потоков: ";
 int count_threads;
-cin >> count_threads;
+count_threads = atoi(argv[1]);
 cout << "Введите порядок матрицы:\n";
 cin >> n;
 vector<vector<int>> matrix(n, vector <int> (n) );
@@ -88,6 +87,8 @@ cout << "Введите элементы матрицы:\n";
 for (i = 0; i < n; i++)
 for (j = 0; j < n; j++)
 cin >> matrix[i][j];
+
+chrono::steady_clock::time_point begin = chrono::steady_clock::now();
 vector<int> minors(n, 0);
 pthread_t threads[count_threads];
 for (int i = 0; i < count_threads; ++i) {
@@ -107,6 +108,12 @@ for (int i = 0; i < n; ++i) {
    else
    result -= minors[i] * matrix[0][i];
 }
+
+chrono::steady_clock::time_point end = chrono::steady_clock::now();
+
 cout<<"Определитель матрицы:\n"<< result << "\n ";
+
+cout<<"Время: " << chrono::duration_cast<chrono::microseconds>(end-begin).count();
+cout<<"\n";
 return 0;
 }
